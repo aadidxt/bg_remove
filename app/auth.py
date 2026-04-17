@@ -1,11 +1,9 @@
-import uuid
-
 API_KEYS = {
-    "test-key-123": {"limit": 100, "used": 0}
+    "bg-be24e8bd47c13f0f5568a2cc6810fd3d": {
+        "label": "primary",
+        "created_at": "2026-04-17"
+    }
 }
 
-def generate_api_key():
-    return str(uuid.uuid4())
-
-def validate_api_key(key):
-    return key in API_KEYS
+def validate_api_key(api_key):
+    return api_key in API_KEYS

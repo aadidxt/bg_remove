@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Background Remover App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      width: 800px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      margin-bottom: 15px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .meta-box {
+      flex: 1;
+      min-width: 280px;
+      border: 1px solid #d9e2ec;
+      border-radius: 8px;
+      padding: 10px;
+      background: #f8fafc;
+    }
+
+    .uid-text,
+    .api-text {
+      font-size: 12px;
+      color: #4a5568;
+      word-break: break-all;
+    }
+
+    .api-row {
+      margin-top: 8px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    #apiKeyInput {
+      flex: 1;
+      min-width: 240px;
+      padding: 8px;
+      border: 1px solid #cbd5e0;
+      border-radius: 5px;
+    }
+
+    .boxes {
+      display: flex;
+      gap: 20px;
+    }
+
+    .box {
+      flex: 1;
+      border: 2px dashed #aaa;
+      border-radius: 10px;
+      padding: 15px;
+      text-align: center;
+      min-height: 300px;
+    }
+
+    .box h3 {
+      margin-bottom: 10px;
+    }
+
+    img {
+      max-width: 100%;
+      max-height: 250px;
+      margin-top: 10px;
+      display: none;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      border: none;
+      background: #007bff;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .secondary-btn {
+      margin-top: 0;
+      background: #2f3b52;
+    }
+
+    #download {
+      display: none;
+      margin-top: 10px;
+      color: green;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    #status {
+      text-align: center;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Background Remover App</h2>
+
+    <div class="topbar">
+      <div class="meta-box">
+        <div class="uid-text">User ID: <span id="userIdValue">-</span></div>
+        <div class="api-text">API Key is required to use app</div>
+        <div class="api-row">
+          <input id="apiKeyInput" type="text" placeholder="Enter API key">
+          <button class="secondary-btn" onclick="saveApiKey()">Save API Key</button>
+        </div>
+      </div>
+      <button class="secondary-btn" onclick="goToDashboard()">Go to Dashboard</button>
+    </div>
+
+    <div class="boxes">
+      <div class="box">
+        <h3>Upload Image</h3>
+        <input type="file" id="fileInput">
+        <br>
+        <button onclick="upload()">Remove Background</button>
+        <img id="uploadPreview" alt="Upload preview">
+      </div>
+
+      <div class="box">
+        <h3>Result</h3>
+        <img id="result" alt="Processed image">
+        <br>
+        <a id="download" download="output.png">Download</a>
+      </div>
+    </div>
+
+    <p id="status"></p>
+  </div>
+
+  <script>
+    const UID_KEY = "bg_remover_uid";
+    const API_KEY_STORAGE = "bg_api_key";
+
+    function getUid() {
+      return localStorage.getItem(UID_KEY);
+    }
+
+    function getApiKey() {
+      return localStorage.getItem(API_KEY_STORAGE);
+    }
+
+    function setUid(uid) {
+      localStorage.setItem(UID_KEY, uid);
+      document.getElementById("userIdValue").innerText = uid;
+    }
+
+    function setApiKey(apiKey) {
+      localStorage.setItem(API_KEY_STORAGE, apiKey);
+      document.getElementById("apiKeyInput").value = apiKey;
+    }
+
+    async function initializeUser() {
+      const apiKey = getApiKey();
+      if (!apiKey) {
+        throw new Error("Enter API key to start");
+      }
+
+      const existingUid = getUid();
+      if (existingUid) {
+        setUid(existingUid);
+        return existingUid;
+      }
+
+      const response = await fetch("http://127.0.0.1:5000/api/v1/session", {
+        method: "POST",
+        headers: {
+          "x-api-key": apiKey
+        }
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error("Invalid API Key");
+        }
+        throw new Error("Could not create user session");
+      }
+
+      const data = await response.json();
+      setUid(data.uid);
+      return data.uid;
+    }
+
+    async function saveApiKey() {
+      const status = document.getElementById("status");
+      const input = document.getElementById("apiKeyInput").value.trim();
+      if (!input) {
+        status.innerText = "Please enter API key";
+        return;
+      }
+
+      setApiKey(input);
+      localStorage.removeItem(UID_KEY);
+      document.getElementById("userIdValue").innerText = "-";
+
+      try {
+        await initializeUser();
+        status.innerText = "API key accepted";
+      } catch (e) {
+        status.innerText = e.message;
+      }
+    }
+
+    function goToDashboard() {
+      window.location.href = "dashboard.html";
+    }
+
+    async function upload() {
+      const fileInput = document.getElementById("fileInput");
+      const status = document.getElementById("status");
+
+      if (!fileInput.files[0]) {
+        alert("Please select a file");
+        return;
+      }
+
+      status.innerText = "Processing...";
+
+      const preview = document.getElementById("uploadPreview");
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        preview.src = e.target.result;
+        preview.style.display = "block";
+      };
+      reader.readAsDataURL(fileInput.files[0]);
+
+      const formData = new FormData();
+      formData.append("image", fileInput.files[0]);
+
+      const response = await fetch("http://127.0.0.1:5000/api/v1/remove-bg", {
+        method: "POST",
+        body: formData,
+        headers: {
+          "x-user-id": getUid(),
+          "x-api-key": getApiKey()
+        }
+      });
+
+      if (!response.ok) {
+        let message = "Request failed";
+        try {
+          const errorData = await response.json();
+          if (errorData && errorData.error) {
+            message = errorData.error;
+          }
+        } catch (e) {
+          message = "Request failed";
+        }
+        status.innerText = message;
+        return;
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+
+      document.getElementById("result").src = url;
+      document.getElementById("result").style.display = "block";
+
+      document.getElementById("download").href = url;
+      document.getElementById("download").style.display = "inline-block";
+
+      const usedHeader = parseInt(response.headers.get("X-Usage-Used"), 10);
+      const limitHeader = parseInt(response.headers.get("X-Usage-Limit"), 10);
+      if (!Number.isNaN(usedHeader) && !Number.isNaN(limitHeader)) {
+        status.innerText = "Done (" + usedHeader + "/" + limitHeader + " used today)";
+      } else {
+        status.innerText = "Done";
+      }
+    }
+
+    (async function init() {
+      try {
+        const savedKey = getApiKey();
+        if (savedKey) {
+          document.getElementById("apiKeyInput").value = savedKey;
+        }
+        await initializeUser();
+      } catch (e) {
+        document.getElementById("status").innerText = e.message;
+      }
+    })();
+  </script>
+</body>
+</html>
