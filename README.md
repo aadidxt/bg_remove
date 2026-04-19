@@ -1,143 +1,50 @@
-
 # 🪄 AI Background Remover
 
-A full-stack web application that removes image backgrounds using deep learning.  
-Users can upload an image, process it using an AI model, and download the result with a transparent background.
-
----
+A full-stack web app for AI-powered image background removal.
 
 ## 🚀 Features
+- JPG/PNG upload & preview
+- AI background removal (rembg U²-Net)
+- Transparent PNG download
+- Daily limit (2/user)
+- User dashboard
+- API key auth
 
-- 📁 Upload image (JPG, PNG)
-- 🧠 AI-based background removal
-- ⚡ Fast processing using Python backend
-- 🖼 Preview original and processed image
-- ⬇ Download final output (PNG with transparent background)
-- 🌐 CORS-enabled API for frontend-backend communication
+## 📂 Structure
+```
+d:/bg/
+├── run.py              # Full-stack entry (python run.py)
+├── app/                # Flask app + modules
+├── app.html            # Main UI (localhost:5000/)
+├── dashboard.html      # Admin dashboard (localhost:5000/dashboard.html)
+├── requirements.txt    # Deps
+├── Dockerfile          # Docker build
+└── docker-compose.yml  # Full stack (optional)
+```
 
----
+## ⚙️ Quick Start (Local)
+1. `pip install -r requirements.txt`
+2. `python run.py`
+3. Open **http://localhost:5000/** (auto-serves app.html)
 
-## 🛠 Tech Stack
+**API Key:** `bg-be24e8bd47c13f0f5568a2cc6810fd3d`
 
-### Frontend
-- HTML
-- CSS
-- JavaScript (Fetch API)
+## 🐳 Docker
+```
+docker compose up --build
+```
+- Frontend: http://localhost:80/app.html
+- Backend API: http://localhost:5000/api/
 
-### Backend
-- Python
-- Flask
-
-### AI Model
-- rembg (uses U²-Net for background removal)
-
----
-
-## 📂 Project Structure
-
-project/
-│
-├── app.py # Flask backend
-├── index.html # Frontend UI
-├── requirements.txt # Python dependencies
-└── venv/ # Virtual environment
-
-
----
-
-## ⚙️ Setup Instructions (SOP)
-
-### 1️⃣ Clone the Repository
-
-
-git clone <your-repo-link>
-cd project
-
-
----
-
-### 2️⃣ Create Virtual Environment
-
-
-python -m venv venv
-
-
-Activate:
-
-**Windows:**
-
-venv\Scripts\activate
-
-
----
-
-### 3️⃣ Install Dependencies
-
-
-
-pip install flask flask-cors rembg[cpu]
-
-
----
-
-### 4️⃣ Run Backend Server
-
-
-python app.py
-
-
-Server will start at:
-
-http://127.0.0.1:5000
-
-
----
-
-### 5️⃣ Run Frontend
-
-- Open `index.html` in browser  
-OR  
-- Use Live Server in VS Code  
-
----
-
-### 6️⃣ Use the Application
-
-1. Upload an image  
-2. Click "Remove Background"  
-3. Wait for processing  
-4. Download result  
-
----
-
-## 🔄 How It Works
-
-1. User uploads image via frontend  
-2. JavaScript sends image using `fetch()`  
-3. Flask receives image  
-4. `rembg` processes it using U²-Net  
-5. Background is removed  
-6. Processed image is sent back  
-7. Frontend displays and allows download  
-
----
+## 🔄 Usage
+1. Enter API key → Get User ID
+2. Upload image → Remove BG → Download PNG
+3. Dashboard: localhost:5000/dashboard.html (user stats)
 
 ## ⚠️ Notes
+- ~170MB model downloads on first run
+- In-memory users (resets on restart)
+- CPU-only (rembg[cpu])
 
-- First run may download AI model (~170MB)
-- Ensure internet connection for first execution
-- Use CPU version for simplicity (`rembg[cpu]`)
-
----
-
-## 🧠 Statement of Purpose (SOP)
-
-This project was developed to explore the integration of artificial intelligence with web technologies to solve real-world problems. The primary objective was to build a system capable of automatically removing backgrounds from images without requiring manual editing.
-
-Through this project, I aimed to understand how deep learning models like U²-Net can be deployed in practical applications using a backend framework such as Flask. Additionally, the project demonstrates how frontend and backend systems communicate effectively using APIs.
-
-This project also helped me gain hands-on experience in handling image data, managing virtual environments, and integrating machine learning models into web applications. It reflects my interest in full-stack development combined with artificial intelligence and showcases my ability to build end-to-end solutions.
-
-Overall, this project represents my effort to bridge the gap between theoretical machine learning concepts and real-world implementation, making AI accessible and usable through simple web interfaces.
-
----
+## 🧠 Purpose
+Full-stack AI web app demonstrating ML deployment, auth/limits, Docker.
